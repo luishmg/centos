@@ -1,0 +1,35 @@
+---
+- name: Centos - Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: '{{ selinux }}'
+
+- name: Centos - Updating packages
+  yum:
+    name: '*'
+    state: latest
+
+- name: Centos - Installing python3-libsemanage base packages
+  yum:
+    name: 'python3-libsemanage'
+    state: latest
+
+- name: Centos - Install dependencies
+  yum:
+    name: 'python3-libsemanage'
+    state: latest
+  loop:
+    '{{ dependencies }}'
+  when: dependencies | default(false)
+
+- name: Centos - Add the overlay module
+  modprobe:
+    name: '{{ item }}'
+    state: present
+  loop: '{{ modules }}'   
+  when: modules | default(false)
+
+- name: Centos - Add the /usr/local/bin/ to global $PATH
+  copy:
+    dest: /etc/profile.d/custom-path.sh
+    content: 'export PATH=$PATH:/usr/local/bin/'
